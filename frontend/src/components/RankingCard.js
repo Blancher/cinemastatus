@@ -31,16 +31,16 @@ export default function RankingCard(props) {
     const handleVote = async(e, path) => {
         e.stopPropagation();
 
+        if (path.includes('dislike')) {
+            setDisliked(prev => !prev);
+            path.includes('un') ? setDislikes(prev => prev - 1) : setDislikes(prev => prev + 1);
+        } else {
+            setLiked(prev => !prev);
+            path.includes('un') ? setLikes(prev => prev - 1) : setLikes(prev => prev + 1);
+        }
+
         try {
             await sendRequest(`ranking/${path}/${props.id}`, 'PATCH', null, {Authorization: `Bearer ${ctx.token}`});
-
-            if (path.includes('dislike')) {
-                setDisliked(prev => !prev);
-                path.includes('un') ? setDislikes(prev => prev - 1) : setDislikes(prev => prev + 1);
-            } else {
-                setLiked(prev => !prev);
-                path.includes('un') ? setLikes(prev => prev - 1) : setLikes(prev => prev + 1);
-            }
         } catch(err) {
             return;
         }
