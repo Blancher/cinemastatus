@@ -7,7 +7,7 @@ import Loading from '../components/Loading';
 export default function SingleRanking() {
     const params = useParams();
     const [error, isLoading, sendRequest] = useHttp();
-    const [ranking, setRanking] = useState({title: 'Mission Impossible Ranking', ranking: []});
+    const [ranking, setRanking] = useState({title: '', ranking: []});
 
     useEffect(() => {
         const dataFetcher = async() => {
