@@ -30,7 +30,7 @@ exports.signup = async(req, res, next) => {
         return res.status(201).json({token, userId: user.id, image: user.image});
     } catch(err) {
         fs.unlink(image, err => console.log(err));
-        return res.status(500).json({message: 'Signup failed'});
+        return res.status(500).json({message: 'Signup failed.'});
     }
 };
 
@@ -48,6 +48,6 @@ exports.login = async(req, res, next) => {
         const token = jwt.sign({userId: user.id}, process.env.JWT_KEY);
         return res.status(200).json({token, userId: user.id, image: user.image});
     } catch(err) {
-        return res.status(500).json({message: 'Signup failed'});
+        return res.status(500).json({message: 'Login failed.'});
     }
 };
