@@ -2,10 +2,13 @@ const {validationResult} = require('express-validator');
 const Ranking = require('../models/ranking');
 
 exports.getRankings = async(req, res, next) => {
+    const title = req.params.title;
+
     try {
         const rankings = await Ranking.find();
         const populatedRankings = await Promise.all(rankings.map(ranking => ranking.populate('series creator')));
-        return res.status(200).json({rankings: populatedRankings.map(ranking => ranking.toObject({getters: true}))});
+        
+        return res.status(200).json({rankings: title === 'empty' ? populatedRankings.map(ranking => ranking.toObject({getters: true})) : populatedRankings.filter(ranking => ranking.title.toLowerCase().includes(title.toLowerCase())).map(ranking => ranking.toObject({getters: true}))});
     } catch(err) {
         return res.status(500).json({message: 'Getting rankings failed.'});
     }
@@ -13,11 +16,13 @@ exports.getRankings = async(req, res, next) => {
 
 exports.getRankingsById = async(req, res, next) => {
     const seriesId = req.params.seriesId;
-    
+    const title = req.params.title;
+
     try {
         const rankings = await Ranking.find({series: seriesId});
         const populatedRankings = await Promise.all(rankings.map(ranking => ranking.populate('series creator')));
-        return res.status(200).json({rankings: populatedRankings.map(ranking => ranking.toObject({getters: true}))});
+
+        return res.status(200).json({rankings: title === 'empty' ? populatedRankings.map(ranking => ranking.toObject({getters: true})) : populatedRankings.filter(ranking => ranking.title.toLowerCase().includes(title.toLowerCase())).map(ranking => ranking.toObject({getters: true}))});
     } catch(err) {
         return res.status(500).json({message: 'Getting rankings failed.'});
     }
