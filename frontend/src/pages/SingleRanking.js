@@ -16,7 +16,7 @@ export default function SingleRanking() {
 
     useEffect(() => {
         const dataFetcher = async() => {
-            const response = await sendRequest(`ranking/${params.rankingId}`);
+            const response = await sendRequest(`ranking/single/${params.rankingId}`);
             setRanking(response.ranking);
             setLikes(response.ranking.likes);
             setDislikes(response.ranking.dislikes);
