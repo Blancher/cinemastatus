@@ -1,18 +1,14 @@
 import {useContext, useState} from 'react';
 import {motion, AnimatePresence} from 'framer-motion';
 import {useNavigate} from 'react-router-dom';
-import useHttp from '../hooks/useHttp';
+import useVote from '../hooks/useVote';
 import {context} from '../store/context';
 
 export default function RankingCard(props) {
     const ctx = useContext(context);
     const navigate = useNavigate();
-    const [error, isLoading, sendRequest] = useHttp();
     const [deleting, setDeleting] = useState(false);
-    const [liked, setLiked] = useState(props.likes.includes(ctx.userId));
-    const [disliked, setDisliked] = useState(props.dislikes.includes(ctx.userId));
-    const [likes, setLikes] = useState(props.likes.length);
-    const [dislikes, setDislikes] = useState(props.dislikes.length);
+    const [liked, disliked, likes, dislikes, handleVote] = useVote(props.likes, props.dislikes, props.id);
 
     const handleView = () => navigate(`/view-ranking/${props.id}`);
     const handleEdit = e => {
@@ -28,26 +24,9 @@ export default function RankingCard(props) {
         props.onDelete();
         handleCloseModal();
     };
-    const handleVote = async(e, path) => {
-        e.stopPropagation();
-
-        if (path.includes('dislike')) {
-            setDisliked(prev => !prev);
-            path.includes('un') ? setDislikes(prev => prev - 1) : setDislikes(prev => prev + 1);
-        } else {
-            setLiked(prev => !prev);
-            path.includes('un') ? setLikes(prev => prev - 1) : setLikes(prev => prev + 1);
-        }
-
-        try {
-            await sendRequest(`ranking/${path}/${props.id}`, 'PATCH', null, {Authorization: `Bearer ${ctx.token}`});
-        } catch(err) {
-            return;
-        }
-    }
     
     return (
-        <AnimatePresence initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}}>
+        <>
             <motion.div onClick={handleView} whileHover={{scale: 1.1}} className='rankingcard'>
                 <h3 className='center'>{props.title}</h3>
                 <h4 className='center'>By {props.creator.username}</h4>
@@ -57,8 +36,8 @@ export default function RankingCard(props) {
                         <AnimatePresence>
                             {ctx.isLoggedIn && (
                                 <motion.div initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 1}} className='vote flex'>
-                                    <motion.button className={liked ? 'selected' : ''} onClick={e => handleVote(e, liked ? 'unlike' : 'like')} initial={{scale: .92}} whileHover={{scale: 1.02}}>{likes} ✓</motion.button>
-                                    <motion.button className={disliked ? 'selected' : ''} onClick={e => handleVote(e, disliked ? 'undislike' : 'dislike')} whileHover={{scale: 1.1}}>{dislikes} ✗</motion.button>
+                                    <motion.button className={liked ? 'selected' : ''} onClick={e => handleVote(e, liked ? 'unlike' : 'like')} initial={{scale: .92}} whileHover={{scale: 1.02}}>{likes.length} ✓</motion.button>
+                                    <motion.button className={disliked ? 'selected' : ''} onClick={e => handleVote(e, disliked ? 'undislike' : 'dislike')} whileHover={{scale: 1.1}}>{dislikes.length} ✗</motion.button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -87,6 +66,6 @@ export default function RankingCard(props) {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </AnimatePresence>
+        </>
     );
 }
