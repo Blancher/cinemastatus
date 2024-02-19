@@ -13,10 +13,13 @@ export default function Rankings() {
     const [rankings, setRankings] = useState([]);
     const [series, setSeries] = useState([]);
     const [ranking, setRanking] = useState('All');
+    const [title, setTitle] = useState('');
+    const [searched, setSearched] = useState(false);
     const [empty, setEmpty] = useState(false);
 
     const handleRedirect = () => navigate('/choose-series');
     const handleRankingChange = e => setRanking(e.target.value);
+    const handleTitleChange = e => setTitle(e.target.value);
     const handleDelete = async(id) => {
         try {
             await sendRequest(`ranking/${id}`, 'DELETE', null, {Authorization: `Bearer ${ctx.token}`});
@@ -25,11 +28,15 @@ export default function Rankings() {
             return;
         }
     };
+    const handleSubmit = e => {
+        e.preventDefault();
+        setSearched(prev => !prev);
+    };
 
     useEffect(() => {
         const dataFetcher = async() => {
             setEmpty(false);
-            const response = ranking === 'All' ? await sendRequest('ranking') : await sendRequest(`ranking/series/${series.find(series => series.title === ranking).id}`);
+            const response = ranking === 'All' ? await sendRequest(`ranking/${title.length > 0 ? title : 'empty'}`) : await sendRequest(`ranking/${series.find(series => series.title === ranking).id}/${title.length > 0 ? title : 'empty'}`);
             const rankings = response.rankings;
             const randomRankings = [];
             let n = rankings.length;
@@ -47,7 +54,7 @@ export default function Rankings() {
         };
 
         dataFetcher();
-    }, [ranking]);
+    }, [ranking, searched]);
 
     useEffect(() => {
         const dataFetcher = async() => {
@@ -71,11 +78,17 @@ export default function Rankings() {
                         {series.map(series => <option value={series.tilte}>{series.title}</option>)}
                     </select>
                 </div>
+                <div>
+                    <p>Ranking Title</p>
+                    <form onSubmit={handleSubmit}>
+                        <input type='text' onChange={handleTitleChange} value={title}/>
+                    </form>
+                </div>
             </motion.div>
             {isLoading && <Loading/>}
             {error && <h2 className='center error'>{error}</h2>}
             {empty && <h2 className='center'>No rankings.</h2>}
-            {rankings.length > 0 && (
+            {rankings.length > 0 && !isLoading && (
                 <div className='flex cards'>
                     {rankings.map(ranking => <RankingCard key={ranking.id} use onDelete={() => handleDelete(ranking.id)} {...ranking}/>)}
                 </div>
